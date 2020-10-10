@@ -37,58 +37,70 @@ ll power(ll a,ll b,ll m=mod)
 }
 /********************************************************/
 
-// SPOJ PHONELST - Phone List TRIE
-// https://www.spoj.com/problems/PHONELST/
-
-
-struct trie{
-	char ch;
-	bool end;
-	trie *next[10];
-	trie(char c): ch(c), end(0) {
-		for(ll i=0;i<10;i++)
-			next[i]=0;
-	}
-};
-
-string s;
-bool b=0;
-trie *insert(trie *node,ll pos)
-{
-	if(pos == s.size())
-	{
-		node->end=1;
-		return node;
-	}
-	if(node->end) b=1;
-	if(pos == s.size()-1 && node->next[s[pos]-'0'] != 0) b = 1;
-	if(node->next[s[pos]-'0'] == 0)
-		node->next[s[pos]-'0'] = new trie(s[pos]);
-	node->next[s[pos]-'0'] = insert(node->next[s[pos]-'0'], pos+1);
-	return node;
-}
+// **0/1 BFS**
+// timus 1930. Ivan's Car
+// https://acm.timus.ru/problem.aspx?space=1&num=1930
 
 int main()
 {
-	IOS;
+	// IOS;
 	ll n,k,m,i,j,c=0,cs=0,t;
 	t=1;
 
-	cin>>t;
+	// cin>>t;
 	while(t--)
 	{
-		trie *root=new trie('#'); // root of trie
-		b=0;
-		cin>>n; // count of strings of dictionary
+		cin>>n>>m;
 		// n=s.length();
 		// ll a[n];
-		rep(i,n)
+		vector<vector<ll>> gu(n+1),gd(n+1);
+		rep(i,m)
 		{
-			cin>>s;
-			root = insert(root,0);
+			cin>>j>>k;
+			gu[j].pb(k);
+			gd[k].pb(j);
 		}
-		
-		cout<<(b==0?"YES":"NO");
+		ll x,y;
+		cin>>x>>y;
+		vector<ll> du(n+1,inf),dd(n+1,inf);
+		deque<ll> q;
+		du[x]=0;
+		dd[x]=0;
+		q.push_back(x);
+		while(!q.empty())
+		{
+			auto v=q.front();
+			q.pop_front();
+			// debug3(v,cost,du[v]);
+			for(auto u:gu[v])
+			{
+				if(du[v]<du[u])
+				{
+					du[u]=du[v];
+					q.push_front(u);
+				}
+				if(dd[v]+1<du[u])
+				{
+					du[u]=dd[v]+1;
+					q.push_back(u);
+				}
+			}
+			for(auto u:gd[v])
+			{
+				if(dd[v]<dd[u])
+				{
+					dd[u]=dd[v];
+					q.push_front(u);
+				}
+				if(du[v]+1<dd[u])
+				{
+					dd[u]=du[v]+1;
+					q.push_back(u);
+				}
+			}
+		}
+		c=min(dd[y],du[y]);
+		cout<<c;
 
 		
 		cout<<"\n";

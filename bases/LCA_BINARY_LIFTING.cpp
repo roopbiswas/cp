@@ -37,35 +37,45 @@ ll power(ll a,ll b,ll m=mod)
 }
 /********************************************************/
 
-// SPOJ PHONELST - Phone List TRIE
-// https://www.spoj.com/problems/PHONELST/
+// 				**LCA BINARY LIFTING**
+// 		https://www.spoj.com/problems/LCASQ/
 
 
-struct trie{
-	char ch;
-	bool end;
-	trie *next[10];
-	trie(char c): ch(c), end(0) {
-		for(ll i=0;i<10;i++)
-			next[i]=0;
-	}
-};
+vector<ll> g[100110];
+ll p[100110][17],ln,lvl[100011];
 
-string s;
-bool b=0;
-trie *insert(trie *node,ll pos)
+
+void dfs(ll x,ll par)
 {
-	if(pos == s.size())
-	{
-		node->end=1;
-		return node;
-	}
-	if(node->end) b=1;
-	if(pos == s.size()-1 && node->next[s[pos]-'0'] != 0) b = 1;
-	if(node->next[s[pos]-'0'] == 0)
-		node->next[s[pos]-'0'] = new trie(s[pos]);
-	node->next[s[pos]-'0'] = insert(node->next[s[pos]-'0'], pos+1);
-	return node;
+	lvl[x]=lvl[par]+1;
+	p[x][0]=par;
+	for(ll i=1;i<=ln;i++)
+		p[x][i]=p[p[x][i-1]][i-1];
+	for(auto q:g[x])
+		if(q!=par)
+			dfs(q,x);
+}
+
+ll lca(ll x,ll y)
+{
+	if(lvl[x]<lvl[y])
+		swap(x,y);
+
+	ll i,lg;
+	for(lg=0;(1<<lg) <= lvl[x] ;lg++);
+	lg--;
+	
+	for(i=lg;i>=0;i--)
+		if((1<<i) <= lvl[x]-lvl[y])
+			x=p[x][i];
+
+	if(x==y) return x;
+
+	for(;lg>=0;lg--)
+		if(p[x][lg] != p[y][lg])
+			x=p[x][lg],y=p[y][lg];
+
+	return p[x][0];
 }
 
 int main()
@@ -74,21 +84,29 @@ int main()
 	ll n,k,m,i,j,c=0,cs=0,t;
 	t=1;
 
+	cin>>n;
+	// n=s.length();
+	// ll a[n];
+	ln=log2(n);
+	rep(i,n)
+	{
+		cin>>m;
+		rep(j,m)
+		{
+			cin>>k;
+			g[i].pb(k);
+			g[k].pb(i);
+		}
+	}
+	lvl[0]=0;
+	dfs(0,0);
+	string s;
 	cin>>t;
 	while(t--)
 	{
-		trie *root=new trie('#'); // root of trie
-		b=0;
-		cin>>n; // count of strings of dictionary
-		// n=s.length();
-		// ll a[n];
-		rep(i,n)
-		{
-			cin>>s;
-			root = insert(root,0);
-		}
-		
-		cout<<(b==0?"YES":"NO");
+		cin>>j>>k;
+		c=lca(j,k);
+		cout<<c;
 
 		
 		cout<<"\n";
